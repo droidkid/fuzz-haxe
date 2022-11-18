@@ -24,7 +24,10 @@ This fuzzer is written as a script, some parts could definitely be wrapped
 in classes. Maybe later, the scripts is a manageable size for now.
 '''
 
+# TODO: Implement writing out haxe_lang.proto to haxe program.
+# TODO: Implement differential testing - outputs should match across all targets
 # TODO: Build seeds from a directory of haxe programs.
+# TODO: Add flags to control which targets to execute. (Cpp is slow to build)
 
 from absl import app
 from absl import flags
@@ -76,9 +79,6 @@ def build_cpp_target():
 def build_hashlink_target():
     subprocess.run(["haxe", "--main", "HaxeFuzzTest", "--hl", "HaxeFuzzTest.hl" ])
 
-def build_lua_target():
-    subprocess.run(["haxe", "--main", "HaxeFuzzTest", "--lua", "HaxeFuzzTest.lua" ])
-
 # ==================== BUILD DEFINITIONS END =================== #
 
 # ==================== RUN DEFINITIONS START =================== #
@@ -89,6 +89,10 @@ def run_js_target():
 def run_hashlink_target():
     subprocess.run(["hl", "HaxeFuzzTest.hl"])
 
+def run_cpp_target():
+    subprocess.run(["./HaxeFuzzTestCpp/HaxeFuzzTest" ])
+    # TODO: Handle failures here
+
 
 # ==================== RUN DEFINITIONS END =================== #
 
@@ -96,10 +100,11 @@ def test_execution(seed):
     write_haxe_program(seed);
 
     build_js_target();
-    # build_cpp_target();
+    build_cpp_target();
     build_hashlink_target();
 
     run_js_target();
+    run_cpp_target();
     run_hashlink_target();
 
 
