@@ -1,1 +1,5 @@
 test_campaign/
+*.pb.cc
+*.pb.h
+*_pb2.py
+haxe_program_mutator

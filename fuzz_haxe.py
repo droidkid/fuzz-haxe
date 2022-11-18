@@ -17,7 +17,7 @@ TODO
 
 Why not use AFL/libfuzzer...? 
 - AFL/libfuzzer requires coverage to guide its mutation. I haven't
-out how to instrument the haxe compiler. 
+figured out how to instrument the haxe compiler. 
 - I'm not sure how to do differential fuzzing in AFL/libfuzzer 
 
 This fuzzer is written as a script, some parts could definitely be wrapped
@@ -45,7 +45,13 @@ flags.DEFINE_integer(
 flags.mark_flag_as_required('campaign_dir')
 
 
+seed_queue = []
 def pick_next_seed():
+    # TODO: 
+    # 1. Pick a random seed 
+    # 2. Get the proto from that folder
+    # 3. Mutate it (using libprotobuf-mutate)
+    # 4. Add it to the list of seeds.
     return random.getrandbits(32)
 
 
@@ -93,7 +99,6 @@ def run_cpp_target():
     subprocess.run(["./HaxeFuzzTestCpp/HaxeFuzzTest" ])
     # TODO: Handle failures here
 
-
 # ==================== RUN DEFINITIONS END =================== #
 
 def test_execution(seed):
@@ -127,7 +132,7 @@ def main(argv):
 
     execution_num = 0
     while (execution_num < FLAGS.executions):
-        next_seed_to_mutate = pick_next_seed()
+        next_seed = pick_next_seed()
 
         EXECUTION_DIR = os.path.abspath(os.path.join(
             CAMPAIGN_EXECUTIONS_DIR, "%d" % execution_num))
@@ -135,7 +140,7 @@ def main(argv):
         cur_dir = os.getcwd()
         os.mkdir(EXECUTION_DIR)
         os.chdir(EXECUTION_DIR)
-        test_execution(next_seed_to_mutate)
+        test_execution(next_seed)
         os.chdir(cur_dir)
 
         execution_num += 1
