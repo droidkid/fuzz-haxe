@@ -3,14 +3,8 @@
 
 #include "protos/haxe_proto.pb.h"
 #include "libprotobuf-mutator/src/mutator.h"
+#include "proto_to_haxe.h"
 
-void proto_to_haxe(std::ostream &out, haxe_fuzzer::haxe_program *program) {
-    out << "class HaxeFuzzTest { " << std::endl;
-    out << "    static public function main() { " << std::endl;
-    out << "        trace(\""<< program->seed() <<"\"); " << std::endl;
-    out << "    }" << std::endl;
-    out << "}" << std::endl;
-}
 
 int main(int argc, char **argv) {
     if (argc < 3) {
@@ -24,7 +18,7 @@ int main(int argc, char **argv) {
     char *mutated_proto_file_path;
     char *haxe_src_file_path;
 
-    haxe_fuzzer::haxe_program program;
+    haxe_fuzzer::HaxeProgram program;
 
     if (argc == 4) {
         input_proto_file_path = argv[1];
@@ -47,10 +41,11 @@ int main(int argc, char **argv) {
     srand(time(NULL));
     protobuf_mutator::Mutator mutator;
     mutator.Seed(rand());
-    mutator.Mutate(&program, 10000);
+    mutator.Mutate(&program, 100000);
 
     std::ofstream mutated_haxe_proto_ofs(mutated_proto_file_path, std::ofstream::out);
     program.SerializeToOstream(&mutated_haxe_proto_ofs);
+    std::cout<<program.DebugString()<<std::endl;
     mutated_haxe_proto_ofs.close();
 
     std::ofstream haxe_src_ofs(haxe_src_file_path, std::ofstream::out);
