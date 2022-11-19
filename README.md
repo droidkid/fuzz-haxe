@@ -1,8 +1,8 @@
 # Fuzzing Haxe
 
-TODO: Write a make file
 ```
-$ protoc -I=. haxe_proto.proto --python_out=. --cpp_out=.
+$ make haxe_program_mutator
+$ 
 
 ```
 
