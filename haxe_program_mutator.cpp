@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "haxe_proto.pb.h"
+#include "protos/haxe_proto.pb.h"
 #include "libprotobuf-mutator/src/mutator.h"
 
 void proto_to_haxe(std::ostream &out, haxe_fuzzer::haxe_program *program) {
