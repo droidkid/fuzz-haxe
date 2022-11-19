@@ -76,8 +76,8 @@ def prep_next_execution(execution_num, campaign_execution_dir):
 # has a file called HaxeFuzzTest.hx.
 
 
-def build_js_target():
-    subprocess.run(["haxe", "--main", "HaxeFuzzTest",
+def build_nodejs_target():
+    subprocess.run(["haxe", "-lib", "hxnodejs", "--main", "HaxeFuzzTest",
                    "--js", "HaxeFuzzTest.js"])
     # TODO: Handle failures here
 
@@ -97,7 +97,7 @@ def build_hashlink_target():
 # ==================== RUN DEFINITIONS START =================== #
 
 
-def run_js_target():
+def run_nodejs_target():
     subprocess.run(["node", "HaxeFuzzTest.js"])
     # TODO: Capture output. Handle failure here
 
@@ -114,11 +114,11 @@ def run_cpp_target():
 
 
 def test_execution():
-    build_js_target()
+    build_nodejs_target()
     # build_cpp_target()
     build_hashlink_target()
 
-    run_js_target()
+    run_nodejs_target()
     # run_cpp_target()
     run_hashlink_target()
 

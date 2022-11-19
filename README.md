@@ -15,6 +15,6 @@ WARNING: This is a work-in-progress.
 
 - absl-py (pip install absl-py)
 - Hashlink (Install hashlink and make sure hl is on path)
-- hxcpp, hxjvm
+- hxcpp, hxjvm, hxnodejs
 - protocol buffers (protoc)
 - libprotobuf-mutator
