@@ -46,28 +46,30 @@ flags.mark_flag_as_required('campaign_dir')
 
 
 seed_queue = []
-def pick_next_seed():
-    # TODO: 
-    # 1. Pick a random seed 
+
+
+def prep_next_execution(execution_num, campaign_execution_dir):
+    # TODO:
+    # 1. Pick a random seed
     # 2. Get the proto from that folder
     # 3. Mutate it (using libprotobuf-mutate)
     # 4. Add it to the list of seeds.
-    return random.getrandbits(32)
+    mutator = ["./haxe_program_mutator"]
 
+    if execution_num > 0:
+        rand_execution_num = random.randrange(execution_num)
+        input_proto_path = os.path.join(
+            campaign_execution_dir, str(rand_execution_num), "haxe_program.pb")
+        mutator.append(input_proto_path)
 
-def write_haxe_program(seed):
-    haxe_src_path = os.path.join(os.getcwd(), "HaxeFuzzTest.hx")
-    haxe_program = [
-        "class HaxeFuzzTest { ", 
-        "   static public function main() {",
-        "       trace(\"" + str(seed) + "!\");",
-        "   }",
-        "}"
-        ];
-    f = open(haxe_src_path, "w")
-    f.write('\n'.join(haxe_program))
-    f.close()
-    return haxe_src_path;
+    mutated_proto_path = os.path.join(
+        campaign_execution_dir, str(execution_num), "haxe_program.pb")
+    haxe_src_path = os.path.join(
+        campaign_execution_dir, str(execution_num), "HaxeFuzzTest.hx")
+
+    mutator = mutator + [mutated_proto_path, haxe_src_path]
+
+    subprocess.run(mutator)
 
 # ==================== BUILD DEFINITIONS START =================== #
 # All the build_<target>_methods assume the current working directory
@@ -75,42 +77,50 @@ def write_haxe_program(seed):
 
 
 def build_js_target():
-    subprocess.run(["haxe", "--main", "HaxeFuzzTest", "--js", "HaxeFuzzTest.js" ])
+    subprocess.run(["haxe", "--main", "HaxeFuzzTest",
+                   "--js", "HaxeFuzzTest.js"])
     # TODO: Handle failures here
+
 
 def build_cpp_target():
-    subprocess.run(["haxe", "--main", "HaxeFuzzTest", "--cpp", "HaxeFuzzTestCpp" ])
+    subprocess.run(["haxe", "--main", "HaxeFuzzTest",
+                   "--cpp", "HaxeFuzzTestCpp"])
     # TODO: Handle failures here
 
+
 def build_hashlink_target():
-    subprocess.run(["haxe", "--main", "HaxeFuzzTest", "--hl", "HaxeFuzzTest.hl" ])
+    subprocess.run(["haxe", "--main", "HaxeFuzzTest",
+                   "--hl", "HaxeFuzzTest.hl"])
 
 # ==================== BUILD DEFINITIONS END =================== #
 
 # ==================== RUN DEFINITIONS START =================== #
+
+
 def run_js_target():
     subprocess.run(["node", "HaxeFuzzTest.js"])
     # TODO: Capture output. Handle failure here
 
+
 def run_hashlink_target():
     subprocess.run(["hl", "HaxeFuzzTest.hl"])
 
+
 def run_cpp_target():
-    subprocess.run(["./HaxeFuzzTestCpp/HaxeFuzzTest" ])
+    subprocess.run(["./HaxeFuzzTestCpp/HaxeFuzzTest"])
     # TODO: Handle failures here
 
 # ==================== RUN DEFINITIONS END =================== #
 
-def test_execution(seed):
-    write_haxe_program(seed);
 
-    build_js_target();
-    build_cpp_target();
-    build_hashlink_target();
+def test_execution():
+    build_js_target()
+    # build_cpp_target()
+    build_hashlink_target()
 
-    run_js_target();
-    run_cpp_target();
-    run_hashlink_target();
+    run_js_target()
+    # run_cpp_target()
+    run_hashlink_target()
 
 
 def main(argv):
@@ -132,15 +142,17 @@ def main(argv):
 
     execution_num = 0
     while (execution_num < FLAGS.executions):
-        next_seed = pick_next_seed()
+        EXECUTION_DIR = os.path.abspath(os.path.join(
+            CAMPAIGN_EXECUTIONS_DIR, "%d" % execution_num))
+        os.mkdir(EXECUTION_DIR)
+        prep_next_execution(execution_num, CAMPAIGN_EXECUTIONS_DIR)
 
         EXECUTION_DIR = os.path.abspath(os.path.join(
             CAMPAIGN_EXECUTIONS_DIR, "%d" % execution_num))
 
         cur_dir = os.getcwd()
-        os.mkdir(EXECUTION_DIR)
         os.chdir(EXECUTION_DIR)
-        test_execution(next_seed)
+        test_execution()
         os.chdir(cur_dir)
 
         execution_num += 1
