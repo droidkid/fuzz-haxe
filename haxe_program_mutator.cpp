@@ -33,10 +33,6 @@ int main(int argc, char **argv) {
         haxe_src_file_path = argv[2];
     }
 
-    std::cout<<mutated_proto_file_path<<std::endl;
-    std::cout<<haxe_src_file_path<<std::endl;
-
-    
     // TODO: Maybe pass in seed as a parameter for determinism?
     srand(time(NULL));
     protobuf_mutator::Mutator mutator;
@@ -45,7 +41,6 @@ int main(int argc, char **argv) {
 
     std::ofstream mutated_haxe_proto_ofs(mutated_proto_file_path, std::ofstream::out);
     program.SerializeToOstream(&mutated_haxe_proto_ofs);
-    std::cout<<program.DebugString()<<std::endl;
     mutated_haxe_proto_ofs.close();
 
     std::ofstream haxe_src_ofs(haxe_src_file_path, std::ofstream::out);
