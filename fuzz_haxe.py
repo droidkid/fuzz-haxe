@@ -193,7 +193,11 @@ def run_exec(exec_dir, capture_dir):
     os.chdir(cur_dir)
 
     if (len(exec_result['analysis']) > 0):
+        analysis_log = open(os.path.join(exec_dir, "analysis.txt"), "w+")
+        analysis_log.write(str(exec_result['analysis']))
+        analysis_log.close()
         subprocess.call(["cp", "-r", exec_dir, capture_dir])
+
     return exec_result
 
 
