@@ -45,7 +45,6 @@ flags.DEFINE_integer(
 flags.mark_flag_as_required('campaign_dir')
 
 
-
 def prep_next_execution(exec_num, campaign_execution_dir):
     exec_dir = os.path.abspath(os.path.join(
         campaign_execution_dir, "%d" % exec_num))
@@ -64,7 +63,7 @@ def prep_next_execution(exec_num, campaign_execution_dir):
 
     subprocess.run(mutator)
 
-    return exec_dir 
+    return exec_dir
 
 # ==================== BUILD DEFINITIONS START =================== #
 # All the build_<target>_methods assume the current working directory
@@ -146,21 +145,27 @@ TARGETS = {
 
 
 def analyze_result(exec_result):
-    analysis = []
+    analysis = {}
+    # TODO: Before adding any more fields, make this a structure, or it'll get messy.
+    analysis['capture_reason'] = []
+    analysis['non_zero_run'] = True
+    analysis['some_build_failed'] = False
 
     # if any of the build targets fail, it is interesting.
     # This most likely means our mutator is not generating valid haxe code.
     # Or there's a bug in the haxe transpiler...
     for target in TARGETS:
         if exec_result[target]['build']['status'] != 'OK':
-            analysis.append(target + ' compilation failed!')
+            analysis['capture_reason'].append(target + ' compilation failed!')
+            analysis['some_build_failed'] = True
 
     # For the builds that passed, check that they have all the same status
     run_status_list = [exec_result[target]['run']['status']
                        for target in TARGETS if exec_result[target]['build']['status'] == 'OK']
     deduped_run_status = list(dict.fromkeys(run_status_list))
     if (len(deduped_run_status) > 1):
-        analysis.append('Different targets had different run status!')
+        analysis['capture_reason'].append(
+            'Different targets had different run status!')
 
     # If all the runs had a OK status, check that their output is same
     if len(deduped_run_status) == 1 and deduped_run_status[0] == 'OK':
@@ -170,10 +175,11 @@ def analyze_result(exec_result):
                            exec_result[target]['run']['status'] == 'OK']
         deduped_run_output = list(dict.fromkeys(run_output_list))
         if len(deduped_run_output) > 1:
-            analysis.append('Different targets had different outputs!')
+            analysis['capture_reason'].append(
+                'Different targets had different outputs!')
+        analysis['non_zero_run'] = False
 
     return analysis
-        
 
 
 def run_exec(exec_dir, capture_dir):
@@ -192,7 +198,7 @@ def run_exec(exec_dir, capture_dir):
 
     os.chdir(cur_dir)
 
-    if (len(exec_result['analysis']) > 0):
+    if (len(exec_result['analysis']['capture_reason']) > 0):
         analysis_log = open(os.path.join(exec_dir, "analysis.txt"), "w+")
         analysis_log.write(str(exec_result['analysis']))
         analysis_log.close()
@@ -224,13 +230,33 @@ def main(argv):
 
     exec_num = 0
     exec_results = {}
+
+    stats = {
+        'nzec_run_count': 0,
+        'build_fail_count': 0,
+        'captured_results_count': 0
+    }
+
     while (exec_num < FLAGS.executions):
         exec_dir = prep_next_execution(exec_num, CAMPAIGN_EXECUTIONS_DIR)
         exec_results[exec_num] = run_exec(exec_dir, CAPTURED_EXECUTIONS_DIR)
-        LOG.write(str(exec_num) + ": " + str(exec_results[exec_num]) + "\n")
-        LOG.flush()
+
+        if (exec_results[exec_num]['analysis']['some_build_failed']):
+            stats['build_fail_count'] += 1
+        elif (exec_results[exec_num]['analysis']['non_zero_run']):
+            # Only count this if build failed
+            stats['nzec_run_count'] += 1
+
+        if (len(exec_results[exec_num]['analysis']['capture_reason']) > 0):
+            stats['captured_results_count'] += 1
+
+        if exec_num % 100 == 0:
+            LOG.write(str(exec_num) +": " + str(stats) + '\n')
+            LOG.flush()
         exec_num += 1
 
+    LOG.write(str(exec_num) +": " + str(stats) + '\n')
+    LOG.flush()
     LOG.close()
 
 
