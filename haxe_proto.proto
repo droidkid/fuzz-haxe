@@ -16,6 +16,9 @@ syntax = "proto2";
 
 package haxe_fuzzer;
 
+// VarRef, Const, LValue, RValue are only integers for now.
+// TODO: Add more types.
+
 message VarRef {
   required int32 varnum = 1;
 }
@@ -28,33 +31,67 @@ message Const {
   required int32 val = 1;
 }
 
-message BinaryOp {
-  enum Op {
+message BoolConst {
+  enum BoolValue {
+    FALSE = 0;
+    TRUE = 1;
+  };
+  required BoolValue value = 1;
+}
+
+message ArithExp {
+  enum ArithOp {
     PLUS = 0;
     MINUS = 1;
     MUL = 2;
     DIV = 3;
     MOD = 4;
     XOR = 5;
-    AND = 6;
-    OR = 7;
-    EQ = 8;
-    NE = 9;
-    LE = 10;
-    GE = 11;
-    LT = 12;
-    GT = 13;
   };
-  required Op op = 1;
+  required ArithOp op = 1;
   required Rvalue left = 2;
   required Rvalue right = 3;
+}
+
+message CompareExp {
+  enum CompareOp {
+    EQ = 0;
+    NE = 1;
+    LE = 2;
+    GE = 3;
+    LT = 4;
+    GT = 5;
+  };
+  required CompareOp op = 1;
+  required Rvalue left = 2;
+  required Rvalue right = 3;
+}
+
+// TODO: Name this better.
+message LogicalExp {
+  enum LogicalOp {
+    AND = 0;
+    OR = 1;
+  };
+  required LogicalOp op = 1;
+  required Condition left = 2;
+  required Condition right = 3;
+}
+
+message Condition {
+  oneof condition {
+    BoolConst bool_const = 1;
+    LogicalExp logical_exp = 2;
+    CompareExp  compare_exp = 3;
+    // TODO: LOGICAL NOT operator
+  }
 }
 
 message Rvalue {
   oneof rvalue_oneof {
     VarRef varref = 1;
     Const cons = 2;
-    BinaryOp binop = 3;
+    ArithExp arith_exp = 3;
   }
 }
 
@@ -65,15 +102,18 @@ message AssignmentStatement {
 
 
 message IfElse {
-  required Rvalue cond = 1;
+  required Condition cond = 1;
   required StatementSeq if_body = 2;
   required StatementSeq else_body = 3;
 }
 
 message While {
-  required Rvalue cond = 1;
+  required Condition cond = 1;
   required StatementSeq body = 2;
 }
+
+// TODO: Add ranged loops (i from 0...100)
+// TODO: Add break/continue in loops
 
 message Statement {
   oneof stmt_oneof {
