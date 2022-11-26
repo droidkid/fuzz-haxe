@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     srand(time(NULL));
     protobuf_mutator::Mutator mutator;
     mutator.Seed(rand());
-    mutator.Mutate(&program, 100000);
+    mutator.Mutate(&program, 100000000);
 
     std::ofstream mutated_haxe_proto_ofs(mutated_proto_file_path, std::ofstream::out);
     program.SerializeToOstream(&mutated_haxe_proto_ofs);
