@@ -67,7 +67,6 @@ message CompareExp {
   required Rvalue right = 3;
 }
 
-// TODO: Name this better.
 message LogicalExp {
   enum LogicalOp {
     AND = 0;
@@ -83,7 +82,6 @@ message Condition {
     BoolConst bool_const = 1;
     LogicalExp logical_exp = 2;
     CompareExp  compare_exp = 3;
-    // TODO: LOGICAL NOT operator
   }
 }
 

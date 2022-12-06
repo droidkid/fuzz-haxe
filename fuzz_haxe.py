@@ -52,7 +52,7 @@ def prep_next_execution(exec_num, campaign_execution_dir):
     mutator = ["./haxe_program_mutator"]
 
     if exec_num > 0:
-        rand_execution_num = random.randrange(exec_num)
+        rand_execution_num = exec_num - 1
         input_proto_path = os.path.join(
             campaign_execution_dir, str(rand_execution_num), "haxe_program.pb")
         mutator.append(input_proto_path)

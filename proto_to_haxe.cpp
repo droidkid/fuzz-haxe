@@ -46,6 +46,9 @@ std::ostream &operator<<(std::ostream &os, const BoolConst &x) {
 }
 
 std::ostream &operator<<(std::ostream &os, const ArithExp &x) {
+  if (x.op() == ArithExp::DIV) {
+      os << "Std.int(";
+  }
   os << "(" << x.left();
   switch (x.op()) {
     case ArithExp::PLUS: os << "+"; break;
@@ -55,7 +58,11 @@ std::ostream &operator<<(std::ostream &os, const ArithExp &x) {
     case ArithExp::MOD: os << "%"; break;
     case ArithExp::XOR: os << "^"; break;
   }
-  return os << x.right() << ")";
+  os << x.right() << ")";
+  if (x.op() == ArithExp::DIV) {
+      os << ")";
+  }
+  return os;
 }
 
 std::ostream &operator<<(std::ostream &os, const CompareExp &x) {
